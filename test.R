@@ -113,13 +113,21 @@ slot(auc, 'y.values')
 
 # Train a boosted tree model
 set.seed(1000)
+gbmGrid<-expand.grid(interaction.depth=c(1,5,9),
+                     n.trees=(1:30)*50,
+                     shrinkage=0.1,
+                     n.minobsinnode=20)
 gbmFit<-train(factor(Survived)~.,
               data=training,
               method="gbm",
               trControl=trainControl(method="repeatedcv",
                                      number=10,
                                      repeats=10),
-              verbose = FALSE)
+              verbose = FALSE,
+              tuneGrid=gbmGrid,
+              summaryFunction=twoClassSummary,
+              classProbs=TRUE,
+              metric="ROC")
 gbmPred<-predict(gbmFit,newdata=testing)
 confusionMatrix(testing[,c("Survived")],gbmPred)
 ##Accuracy: 0.7865 
